@@ -28,8 +28,8 @@
 
 #import "PushPlugin.h"
 #import "AppDelegate+notification.h"
-@import FirebaseInstanceID;
-@import FirebaseMessaging;
+
+@import Firebase;
 @import FirebaseAnalytics;
 
 @implementation PushPlugin : CDVPlugin
@@ -53,7 +53,7 @@
 
 -(void)initRegistration;
 {
-    NSString * registrationToken = [[FIRInstanceID instanceID] token];
+    NSString * registrationToken = [[NSString alloc] initWithData:[FIRMessaging messaging].APNSToken encoding:NSUTF8StringEncoding];
 
     if (registrationToken != nil) {
         NSLog(@"FCM Registration Token: %@", registrationToken);
@@ -81,7 +81,7 @@
 #if !TARGET_IPHONE_SIMULATOR
     // A rotation of the registration tokens is happening, so the app needs to request a new token.
     NSLog(@"The FCM registration token needs to be changed.");
-    [[FIRInstanceID instanceID] token];
+    [[NSString alloc] initWithData:[FIRMessaging messaging].APNSToken encoding:NSUTF8StringEncoding];
     [self initRegistration];
 #endif
 }
@@ -285,12 +285,7 @@
             [center setNotificationCategories:categories];
             [self handleNotificationSettingsWithAuthorizationOptions:[NSNumber numberWithInteger:authorizationOptions]];
 
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(handleNotificationSettings:)
-                                                         name:pushPluginApplicationDidBecomeActiveNotification
-                                                       object:nil];
-
-
+            [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(handleNotificationSettings:) name:pushPluginApplicationDidBecomeActiveNotification object:nil];
 
             // Read GoogleService-Info.plist
             NSString *path = [[NSBundle mainBundle] pathForResource:@"GoogleService-Info" ofType:@"plist"];
